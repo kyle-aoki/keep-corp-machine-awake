@@ -13,10 +13,6 @@ listening = False
 
 
 def handle_status_thread():
-    global last_action
-    global thread_delay
-    global listener_min_start_time
-    global max_inaction_time
     global listening
     while True:
         time.sleep(thread_delay)
