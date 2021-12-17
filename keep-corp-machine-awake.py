@@ -2,72 +2,82 @@ import pyautogui
 import time
 from pynput import keyboard
 from threading import Thread
+import os
 
+class KeepCorpMachineAwake:
 
-last_action = time.time()
-thread_delay = 29
-listener_min_start_time = 60 * 2
-keyboard_listener = None
-max_inaction_time = 60 * 5
-listening = False
-
-
-def handle_status_thread():
-    global listening
-    while True:
-        time.sleep(thread_delay)
-        print(f" --> Listening: {listening}, Time Elapsed: {round(time_elapsed())} ")
-
-
-def time_elapsed():
-    global last_action
-    return time.time() - last_action
-
-
-def handle_key_pressed(key):
-    global last_action
-    global listening
+    program_start_time = time.time()
     last_action = time.time()
-    keyboard_listener.stop()
+    thread_delay = 30
+    listener_min_start_time = 60 * 2
+    keyboard_listener = None
+    max_inaction_time = 60 * 5
     listening = False
 
+    def handle_status_thread(self):
+        print("Program started.")
+        print(f"Will update below information every {self.thread_delay} seconds.")
+        while True:
+            running_for = round(time.time() - self.program_start_time)
+            listener_will_start = max(self.listener_min_start_time - self.time_elapsed(), 0)
+            will_trigger_key_press_in = max(self.max_inaction_time - self.time_elapsed(), 0)
 
-def start_keyboard_listener():
-    global keyboard_listener
-    global listening
-    keyboard_listener = keyboard.Listener(on_press=handle_key_pressed)
-    keyboard_listener.start()
-    listening = True
-
-
-def handle_listener_thread():
-    global thread_delay
-    global listener_min_start_time
-    global listening
-    while True:
-        time.sleep(thread_delay)
-        if time_elapsed() > listener_min_start_time and not listening:
-            start_keyboard_listener()
-
-
-def wake_press():
-    global last_action
-    pyautogui.press('command')
-    last_action = time.time()
-
-
-def handle_execute_thread():
-    global max_inaction_time
-    while True:
-        time.sleep(thread_delay)
-        if time_elapsed() > max_inaction_time:
-            wake_press()
             
+            print("")
+            print(f"  Running for:                   {running_for}")
+            print(f"  Time since last key press:     {self.time_elapsed()}")
+            print(f"  Listener will start in:        {listener_will_start}")
+            print(f"  Listening:                     {self.listening}")
+            print(f"  Will trigger key press in:     {will_trigger_key_press_in}")
+            print("")
 
-listener_thread = Thread(target=handle_listener_thread)
-executor_thread = Thread(target=handle_execute_thread)
-status_thread = Thread(target=handle_status_thread)
+            time.sleep(self.thread_delay)
+            os.system('cls' if os.name == 'nt' else 'clear')
 
-listener_thread.start()
-executor_thread.start()
-status_thread.start()
+    def time_elapsed(self):
+        return round(time.time() - self.last_action)
+
+    def handle_key_pressed(self, key):
+        print(f"Key '{key} pressed.")
+        self.last_action = time.time()
+        self.keyboard_listener.stop()
+        self.listening = False
+
+
+    def start_keyboard_listener(self):
+        self.keyboard_listener = keyboard.Listener(on_press=self.handle_key_pressed)
+        self.keyboard_listener.start()
+        self.listening = True
+
+
+    def handle_listener_thread(self):
+        while True:
+            time.sleep(self.thread_delay)
+            if self.time_elapsed() >= self.listener_min_start_time and not self.listening:
+                self.start_keyboard_listener()
+
+
+    def wake_press(self):
+        pyautogui.press('ctrl')
+        self.last_action = time.time()
+
+
+    def handle_execute_thread(self):
+        while True:
+            time.sleep(self.thread_delay)
+            if self.time_elapsed() >= self.max_inaction_time:
+                self.wake_press()
+                
+
+    def start(self):
+        listener_thread = Thread(target=self.handle_listener_thread)
+        executor_thread = Thread(target=self.handle_execute_thread)
+        status_thread = Thread(target=self.handle_status_thread)
+
+        listener_thread.start()
+        executor_thread.start()
+        status_thread.start()
+
+
+if __name__ == '__main__':
+    KeepCorpMachineAwake().start()
