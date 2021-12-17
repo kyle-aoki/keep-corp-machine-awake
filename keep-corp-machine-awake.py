@@ -56,7 +56,7 @@ def wake_press():
     last_action = time.time()
 
 
-def execute_thread_handler():
+def handle_execute_thread():
     global max_inaction_time
     while True:
         time.sleep(thread_delay)
@@ -65,7 +65,7 @@ def execute_thread_handler():
             
 
 listener_thread = Thread(target=handle_listener_thread)
-executor_thread = Thread(target=execute_thread_handler)
+executor_thread = Thread(target=handle_execute_thread)
 status_thread = Thread(target=handle_status_thread)
 
 listener_thread.start()
