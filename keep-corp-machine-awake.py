@@ -43,12 +43,10 @@ class KeepCorpMachineAwake:
         self.keyboard_listener.stop()
         self.listening = False
 
-
     def start_keyboard_listener(self):
         self.keyboard_listener = keyboard.Listener(on_press=self.handle_key_pressed)
         self.keyboard_listener.start()
         self.listening = True
-
 
     def handle_listener_thread(self):
         while True:
@@ -56,18 +54,16 @@ class KeepCorpMachineAwake:
             if self.time_elapsed() >= self.listener_min_start_time and not self.listening:
                 self.start_keyboard_listener()
 
-
     def wake_press(self):
         pyautogui.press('ctrl')
         self.last_action = time.time()
-
 
     def handle_execute_thread(self):
         while True:
             time.sleep(self.thread_delay)
             if self.time_elapsed() >= self.max_inaction_time:
                 self.wake_press()
-                
+             
 
     def start(self):
         listener_thread = Thread(target=self.handle_listener_thread)
